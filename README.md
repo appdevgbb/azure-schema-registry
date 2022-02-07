@@ -2,6 +2,8 @@
 
 The [Azure Schema Registry](https://docs.microsoft.com/azure/event-hubs/schema-registry-overview) provides a repository for developers that wish to store, define and enforce schemas in their distributed applications and services.
 
+![Azure Schema Registry](https://docs.microsoft.com/azure/event-hubs/media/schema-registry-overview/schema-registry.svg)
+
 These samples demonstrate how to use the schema registry to encode and decode events. The samples also show how to use the schema registry with [Azure Event Hubs](https://docs.microsoft.com/azure/event-hubs/event-hubs-about) when producing and consuming events.
 
 ## Prerequisites
@@ -15,7 +17,7 @@ The following prerequisites are needed to run the samples in this repository:
   
 ## Console application settings
 
-Settings for both the consumer and producer applications are stored in a local `App.config` file. The structure is as follows:
+Settings for both the consumer and producer applications are stored in a local `App.config` file:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
