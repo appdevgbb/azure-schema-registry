@@ -7,20 +7,13 @@ using System.Configuration;
 using zohan.schemaregistry.events;
 
 var schemaGroupName = ConfigurationManager.AppSettings["SCHEMA_GROUP"];
-var connectionString = ConfigurationManager.AppSettings["EH_CONNECTION_STRING"];
+var eventHubsNamespace = ConfigurationManager.AppSettings["EH_NAMESPACE"];
 var eventHubName = ConfigurationManager.AppSettings["EH_NAME"];
-
-// Create token credentials
-var credential = new ClientSecretCredential(
-    ConfigurationManager.AppSettings["SCHEMA_REGISTRY_TENANT_ID"],
-    ConfigurationManager.AppSettings["SCHEMA_REGISTRY_CLIENT_ID"],
-    ConfigurationManager.AppSettings["SCHEMA_REGISTRY_CLIENT_SECRET"]
-   );
 
 // Initialize schema registry client 
 var client = new SchemaRegistryClient(
         ConfigurationManager.AppSettings["SCHEMA_REGISTRY_URL"],
-        credential);
+        new DefaultAzureCredential());
 
 // Create avro encoder and set the auto register flag
 // to true in case schema does not exist.
@@ -34,7 +27,7 @@ var loyalty = new CustomerLoyalty { CustomerId = 1, Description = "100 points", 
 EventData eventData = await encoder.EncodeMessageDataAsync<EventData>(loyalty);
 
 // Publish to Event Hubs
-await using (var producer = new EventHubProducerClient(connectionString, eventHubName))
+await using (var producer = new EventHubProducerClient(eventHubsNamespace, eventHubName, new DefaultAzureCredential()))
 {
     using EventDataBatch eventBatch = await producer.CreateBatchAsync();
 

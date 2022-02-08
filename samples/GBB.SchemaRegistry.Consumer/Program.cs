@@ -13,20 +13,13 @@ await ReadEventsAsync();
 static async Task ReadEventsAsync()
 {
     var schemaGroupName = ConfigurationManager.AppSettings["SCHEMA_GROUP"];
-    var connectionString = ConfigurationManager.AppSettings["EH_CONNECTION_STRING"];
+    var eventHubsNamespace = ConfigurationManager.AppSettings["EH_NAMESPACE"];
     var eventHubName = ConfigurationManager.AppSettings["EH_NAME"];
-
-    // Create token credentials
-    var credential = new ClientSecretCredential(
-        ConfigurationManager.AppSettings["SCHEMA_REGISTRY_TENANT_ID"],
-        ConfigurationManager.AppSettings["SCHEMA_REGISTRY_CLIENT_ID"],
-        ConfigurationManager.AppSettings["SCHEMA_REGISTRY_CLIENT_SECRET"]
-       );
 
     // Initialize schema registry client 
     var client = new SchemaRegistryClient(
             ConfigurationManager.AppSettings["SCHEMA_REGISTRY_URL"],
-            credential);
+            new DefaultAzureCredential());
 
     // Create avro encoder instance
     var encoder = new SchemaRegistryAvroEncoder(
@@ -38,8 +31,9 @@ static async Task ReadEventsAsync()
     var consumerGroup = EventHubConsumerClient.DefaultConsumerGroupName;
     var consumer = new EventHubConsumerClient(
         consumerGroup,
-        connectionString,
-        eventHubName);
+        eventHubsNamespace,
+        eventHubName,
+        new DefaultAzureCredential());
 
     try
     {
