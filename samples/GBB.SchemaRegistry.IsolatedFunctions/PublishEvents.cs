@@ -57,9 +57,9 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
             // Publish to Event Hubs
             // Note: Having issues with multiple output bindings and this working
             // property. For now, let's just use the Event Hubs SDK directly.
-            var connectionString = Environment.GetEnvironmentVariable("EventHubConnectionString");
+            var eventHubsFQNamespace = Environment.GetEnvironmentVariable("EventHubsConnection__fullyQualifiedNamespace");
             var eventHubName = Environment.GetEnvironmentVariable("EventHubName");
-            await using (var producer = new EventHubProducerClient(connectionString, eventHubName))
+            await using (var producer = new EventHubProducerClient(eventHubsFQNamespace, eventHubName, new DefaultAzureCredential()))
             {
                 using EventDataBatch eventBatch = await producer.CreateBatchAsync();
                 if (!eventBatch.TryAdd(encodedLoyalty))
@@ -75,15 +75,10 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
 
         private static SchemaRegistryClient InitializeSchemaRegistryClient()
         {
-            // Instantiate a schema registry client with client secret credentials
+            // Instantiate a schema registry client with default Azure credentials
+            // See: https://docs.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
             var schemaRegistryUrl = Environment.GetEnvironmentVariable("SchemaRegistryUrl");
-            var tenantId = Environment.GetEnvironmentVariable("SchemaRegistryTenantId");
-            var clientId = Environment.GetEnvironmentVariable("SchemaRegistryClientId");
-            var clientSecret = Environment.GetEnvironmentVariable("SchemaRegistryClientSecret");
-
-            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-
-            return new SchemaRegistryClient(schemaRegistryUrl, credential);
+            return new SchemaRegistryClient(schemaRegistryUrl, new DefaultAzureCredential());
         }
     }
 

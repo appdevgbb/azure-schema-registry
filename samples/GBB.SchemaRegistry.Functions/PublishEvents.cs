@@ -21,7 +21,7 @@ namespace GBB.SchemaRegistry.Functions
         [FunctionName("PublishEvents")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            [EventHub("%EventHubName%", Connection = "EventHubConnectionString")] IAsyncCollector<EventData> events,
+            [EventHub("%EventHubName%", Connection = "EventHubsConnection")] IAsyncCollector<EventData> events,
             ILogger log)
         {
             log.LogInformation("PublishEvents function invoked");
@@ -52,15 +52,10 @@ namespace GBB.SchemaRegistry.Functions
 
         private static SchemaRegistryClient InitializeSchemaRegistryClient()
         {
-            // Instantiate a schema registry client with client secret credentials
+            // Instantiate a schema registry client with default Azure credentials
+            // See: https://docs.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
             var schemaRegistryUrl = Environment.GetEnvironmentVariable("SchemaRegistryUrl");
-            var tenantId = Environment.GetEnvironmentVariable("SchemaRegistryTenantId");
-            var clientId = Environment.GetEnvironmentVariable("SchemaRegistryClientId");
-            var clientSecret = Environment.GetEnvironmentVariable("SchemaRegistryClientSecret");
-            
-            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-
-            return new SchemaRegistryClient(schemaRegistryUrl, credential);
+            return new SchemaRegistryClient(schemaRegistryUrl, new DefaultAzureCredential());
         }
     }
 }

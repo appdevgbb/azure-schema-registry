@@ -20,7 +20,7 @@ namespace GBB.SchemaRegistry.Functions
 
         [FunctionName("ConsumeEvents")]
         public async Task Run(
-            [EventHubTrigger("%EventHubName%", Connection = "EventHubConnectionString")] EventData[] events, 
+            [EventHubTrigger("%EventHubName%", Connection = "EventHubsConnection")] EventData[] events, 
             ILogger log)
         {
             log.LogInformation("ConsumerEvents function invoked");
@@ -59,12 +59,7 @@ namespace GBB.SchemaRegistry.Functions
         private static SchemaRegistryClient InitializeSchemaRegistryClient()
         {
             var schemaRegistryUrl = Environment.GetEnvironmentVariable("SchemaRegistryUrl");
-            var tenantId = Environment.GetEnvironmentVariable("SchemaRegistryTenantId");
-            var clientId = Environment.GetEnvironmentVariable("SchemaRegistryClientId");
-            var clientSecret = Environment.GetEnvironmentVariable("SchemaRegistryClientSecret");
-            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-
-            return new SchemaRegistryClient(schemaRegistryUrl, credential);
+            return new SchemaRegistryClient(schemaRegistryUrl, new DefaultAzureCredential());
         }
     }
 }
