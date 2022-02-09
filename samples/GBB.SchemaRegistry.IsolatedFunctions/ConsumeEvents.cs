@@ -18,8 +18,7 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
     public class ConsumeEvents
     {
         private readonly ILogger _logger;
-        private static readonly SchemaRegistryClient _schemaRegistryClient = InitializeSchemaRegistryClient();
-        private static readonly string _schemaGroup = Environment.GetEnvironmentVariable("SchemaGroup");
+        private static readonly SchemaRegistryAvroEncoder _encoder = InitializeEncoder();
 
         public ConsumeEvents(ILoggerFactory loggerFactory)
         {
@@ -40,12 +39,6 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
 
             var exceptions = new List<Exception>();
 
-            // Create an instance of the avro encoder
-            var encoder = new SchemaRegistryAvroEncoder(
-                _schemaRegistryClient,
-                _schemaGroup,
-                new SchemaRegistryAvroObjectEncoderOptions { AutoRegisterSchemas = false });
-
             // Create a tuple to hold the event body and index from the 
             // array so that we don't have to use a counter variable for
             // the index when we iterate the collection (fancy).
@@ -62,12 +55,12 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
                 // with the value from the system properties collection. 
                 var eventData = new EventData(eventBody);
 
-                // The content type will include the type along with the schema id in the
-                // schema registry.
+                // The content type will include the type along with the schema ID from
+                // the registry (example: avro/binary+fe7d144ca29b4b887bf66)
                 eventData.ContentType = props["content-type"].GetProperty("Value").GetString();                
                 
                 // Decode the event data
-                CustomerLoyalty loyalty = (CustomerLoyalty)await encoder.DecodeMessageDataAsync(eventData, typeof(CustomerLoyalty));
+                CustomerLoyalty loyalty = (CustomerLoyalty)await _encoder.DecodeMessageDataAsync(eventData, typeof(CustomerLoyalty));
             }
 
             if (exceptions.Count > 1)
@@ -77,13 +70,19 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
                 throw exceptions.Single();
         }
 
-
-        private static SchemaRegistryClient InitializeSchemaRegistryClient()
+        private static SchemaRegistryAvroEncoder InitializeEncoder()
         {
             // Instantiate a schema registry client with default Azure credentials
             // See: https://docs.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
             var schemaRegistryUrl = Environment.GetEnvironmentVariable("SchemaRegistryUrl");
-            return new SchemaRegistryClient(schemaRegistryUrl, new DefaultAzureCredential());
-        }
+            var schemaGroup = Environment.GetEnvironmentVariable("SchemaGroup");
+            var client =  new SchemaRegistryClient(schemaRegistryUrl, new DefaultAzureCredential());
+
+            // Create an instance of the avro encoder that for the schema registry           
+            return new SchemaRegistryAvroEncoder(
+                client,
+                schemaGroup,
+                new SchemaRegistryAvroObjectEncoderOptions { AutoRegisterSchemas = false });
+        }       
     }
 }
