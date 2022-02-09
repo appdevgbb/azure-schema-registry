@@ -17,8 +17,7 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
     public class PublishEvents
     {
         private readonly ILogger _logger;
-        private static readonly SchemaRegistryClient _schemaRegistryClient = InitializeSchemaRegistryClient();
-        private static readonly string _schemaGroup = Environment.GetEnvironmentVariable("SchemaGroup");
+        private static readonly SchemaRegistryAvroEncoder _encoder = InitializeEncoder();
 
         public PublishEvents(ILoggerFactory loggerFactory)
         {
@@ -36,13 +35,6 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
             response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
             response.WriteString("Welcome to Azure Functions!");
 
-            // Create an instance of the avro encoder and set the auto flag
-            // to true in case the schema does not exists in the registry.
-            var encoder = new SchemaRegistryAvroEncoder(
-                _schemaRegistryClient,
-                _schemaGroup,
-                new SchemaRegistryAvroObjectEncoderOptions { AutoRegisterSchemas = true });
-
             // Create a customer loyalty record
             var loyalty = new CustomerLoyalty
             {
@@ -52,7 +44,7 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
             };
 
             // Encode the loyalty record using the schema registry
-            EventData encodedLoyalty = await encoder.EncodeMessageDataAsync<EventData>(loyalty);
+            EventData encodedLoyalty = await _encoder.EncodeMessageDataAsync<EventData>(loyalty);
 
             // Publish to Event Hubs
             // Note: Having issues with multiple output bindings and this working
@@ -73,12 +65,20 @@ namespace GBB.SchemaRegistry.IsolatedFunctions
             return response;
         }
 
-        private static SchemaRegistryClient InitializeSchemaRegistryClient()
+        private static SchemaRegistryAvroEncoder InitializeEncoder()
         {
             // Instantiate a schema registry client with default Azure credentials
             // See: https://docs.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet
             var schemaRegistryUrl = Environment.GetEnvironmentVariable("SchemaRegistryUrl");
-            return new SchemaRegistryClient(schemaRegistryUrl, new DefaultAzureCredential());
+            var schemaGroup = Environment.GetEnvironmentVariable("SchemaGroup");
+            var client = new SchemaRegistryClient(schemaRegistryUrl, new DefaultAzureCredential());
+
+            // Create an instance of the avro encoder and set the auto flag
+            // to true in case the schema does not exists in the registry.      
+            return new SchemaRegistryAvroEncoder(
+                client,
+                schemaGroup,
+                new SchemaRegistryAvroObjectEncoderOptions { AutoRegisterSchemas = true });
         }
     }
 
