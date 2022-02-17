@@ -11,6 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GBB.SchemaRegistry.Function
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GBB.SchemaRegistry.IsolatedFunctions", "GBB.SchemaRegistry.IsolatedFunctions\GBB.SchemaRegistry.IsolatedFunctions.csproj", "{3D28C921-607E-4ECD-991E-BCCD7A9EA05C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "schemas", "schemas", "{710DEDBF-CFC5-4BB0-A9B9-E0400977E25E}"
+	ProjectSection(SolutionItems) = preProject
+		..\schemas\cloudevents.avsc = ..\schemas\cloudevents.avsc
+		..\schemas\CustomerLoyalty.avsc = ..\schemas\CustomerLoyalty.avsc
+		..\schemas\generate-pocos.ps1 = ..\schemas\generate-pocos.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

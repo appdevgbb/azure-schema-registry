@@ -1,0 +1,21 @@
+{
+  "namespace": "zohan.schemaregistry.events",
+  "type": "record",
+  "name": "CustomerLoyalty",
+  "version": "1.0",
+  "doc": "Avro Event Format for CustomerLoyalty event",
+  "fields": [
+    {
+      "name": "CustomerId",
+      "type": "int"
+    },
+    {
+      "name": "PointsAdded",
+      "type": "int"
+    },
+    {
+      "name": "Description",
+      "type": "string"
+    }
+  ]
+}
