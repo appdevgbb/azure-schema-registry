@@ -15,16 +15,12 @@ var client = new SchemaRegistryClient(
         ConfigurationManager.AppSettings["SCHEMA_REGISTRY_URL"],
         new DefaultAzureCredential());
 
-// Create avro encoder and set the auto register flag
-// to true in case schema does not exist.
-var encoder = new SchemaRegistryAvroEncoder(
-    client,
-    schemaGroupName,
-    new SchemaRegistryAvroObjectEncoderOptions { AutoRegisterSchemas = true });
+// Create a schema registry avro serializer and set the auto register flag
+var serializer = new SchemaRegistryAvroSerializer(client, schemaGroupName, new SchemaRegistryAvroSerializerOptions { AutoRegisterSchemas = true });
 
 // Encode an instance of a customer loyalty record
 var loyalty = new CustomerLoyalty { CustomerId = 1, Description = "100 points", PointsAdded = 100 };
-EventData eventData = await encoder.EncodeMessageDataAsync<EventData>(loyalty);
+EventData eventData = (EventData) await serializer.SerializeAsync(loyalty, messageType: typeof(EventData));
 
 // Publish to Event Hubs
 await using (var producer = new EventHubProducerClient(eventHubsNamespace, eventHubName, new DefaultAzureCredential()))
